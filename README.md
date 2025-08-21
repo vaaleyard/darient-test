@@ -15,7 +15,7 @@ The main components for this project is OpenWebUI, Ollama and a PostgreSQL insta
 Access:
 * https://devops-le.darienc.com
 * User: `admin@darient.com`
-* Password: `darient`
+* Password: `Darient123`
 
 As the provided server is highly resource limited (4gb RAM) and 3 vCPU, the Ollama chat is having a hard time to work properly.
 
@@ -36,7 +36,7 @@ For the monitoring side, I've decided to use Grafana + Prometheus + Loki + Alert
 ![dash-node-exporter](imgs/dash-node-exporter.png)
 
 Access:
-* https://devops-le.darienc.com
+* https://devops-monitor-le.darienc.com
 * User: `admin`
 * Password: `AiXETCCPwUVDfr3Ql11KmZiRglC9jLDBFFKWt3MQ`
 
@@ -50,3 +50,32 @@ A GitHub Actions workflow has been created to automatically deploy any changes m
 
 
 ## Part 2
+
+### High Availability and Regional Scalability
+* I chose AWS as main cloud provider as I have more experience with it, but other clouds can be taken in consideration for various features.
+* Resilience to zone failure can be achieve using Multi AZ on the cloud resources where the applications will be hosted. Kubernetes (EKS), Database (RDS), Networking (Load Balancer), etc. can be set up as Multi AZ deployment.
+* Horizontal Scaling will be setup on Kubernetes (Cluster Autoscaler) and on the pods (Horizontal Pod Autoscaler) so worker nodes  and pods can be added/removed based on the pod usage.
+
+### Multiple Model Management and GPU Acceleration
+The platform can split both tier by instance types on the node pools.
+* Standard Tier (CPU) will use General Purpose instance types, like m5 instances, and will have Auto Scaling based on demand.
+* Premium Tier (GPU) will use Accelerated Computing instances types, like P4/P5/P6, to support NVIDIA GPUs.
+* Deployments will be configured with Labels and Tolerations to be placed on the correct node pool.
+
+### Cost Optimization
+* Spot instances can be used with a mixed approach, so we have instances for anytime but still with the majority of them as spot instances.
+
+### Robust and Persistent Data Architecture
+* Amazon RDS Aurora PostgreSQL can be used as database. We can have the benefit of having multiple read replicas in cluster mode.
+* To store the models centralized, we can use Amazon EFS, so we can concurrent access for both tiers.
+
+### Multi-Tenant Security and Governance
+* Different namespaces on kubernetes can be used for each client, as several tenents.
+* Network Policies
+* AWS Secret Manager can be the best solution in this case. Kubernetes can sync the secrets with AWS and fetch the most up to date value.
+
+### Advanced Observability
+For observability, we can use several tools.
+* For metrics: Prometheus, Node Exporter.
+* For graphs: Grafana.
+* For Log Management: Promtail + Loki (CloudWatch could also be a solution).
