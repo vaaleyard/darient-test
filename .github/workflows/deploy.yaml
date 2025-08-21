@@ -61,7 +61,7 @@ jobs:
 
     - name: kube-prometheus-stack
       run: |
-        helm upgrade --install kube-prom prometheus-community/kube-prometheus-stack \
+        helm upgrade --install prometheus-stack prometheus-community/kube-prometheus-stack \
           -n monitoring --set grafana.enabled=false --atomic --create-namespace
 
     - name: Loki stack
