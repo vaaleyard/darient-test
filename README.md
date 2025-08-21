@@ -13,6 +13,11 @@ It consists of OpenWebUI with Ollama and a monitoring stack, with logs, metrics 
 The main components for this project is OpenWebUI, Ollama and a PostgreSQL instance to store all its data. All of them are running installed via helm, and we can see it's working in the URL and with the following image:
 ![openwebui](imgs/openwebui.png)
 
+Access:
+* https://devops-le.darienc.com
+* User: `admin@darient.com`
+* Password: `darient`
+
 As the provided server is highly resource limited (4gb RAM) and 3 vCPU, the Ollama chat is having a hard time to work properly.
 
 ### Kubernetes
@@ -28,6 +33,11 @@ For the monitoring side, I've decided to use Grafana + Prometheus + Loki + Alert
 ![dash-logs](imgs/dash-logs.png)
 
 ![dash-node-exporter](imgs/dash-node-exporter.png)
+
+Access:
+* https://devops-le.darienc.com
+* User: `admin`
+* Password: `AiXETCCPwUVDfr3Ql11KmZiRglC9jLDBFFKWt3MQ`
 
 There are alerts for the Ollama if memory usage is above 80% for more than 5 minutes, which has been setup with a Prometheus Rule.
 
