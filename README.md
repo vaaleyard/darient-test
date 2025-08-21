@@ -6,8 +6,7 @@ The requested applications can be found at:
 * https://devops-monitor-le.darienc.com/dashboard/
 
 ## Part 1
-It consists of OpenWebUI with Ollama and a monitoring stack, with logs, metrics and alerts. All deployed with kubernetes and with a pipeline on GitHub Actions (in this repository) to automatically deploy everything. You can have a preview of the cluster:
-![k9s](imgs/k9s.png)
+It consists of OpenWebUI with Ollama and a monitoring stack, with logs, metrics and alerts. All deployed with kubernetes and with a pipeline on GitHub Actions (in this repository) to automatically deploy everything.
 
 ### Main Components
 The main components for this project is OpenWebUI, Ollama and a PostgreSQL instance to store all its data. All of them are running installed via helm, and we can see it's working in the URL and with the following image:
@@ -27,6 +26,8 @@ The installation is simple and can be done with the following command:
 ```
 curl -sfL https://get.k3s.io | sh -
 ```
+You can have a preview of the cluster:
+![k9s](imgs/k9s.png)
 
 ### Monitoring
 For the monitoring side, I've decided to use Grafana + Prometheus + Loki + Alert Manager. This stack is useful as we can have both logs and metrics viewed centralized on Grafana. All of them has been installed with helm as well. Here's a preview of the dashboards:
