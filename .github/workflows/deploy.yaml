@@ -1,0 +1,75 @@
+name: deploy
+on:
+  push: { branches: [ main ] }
+  workflow_dispatch: {}
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup kubectl
+      uses: azure/setup-kubectl@v4
+
+    - name: Setup Helm
+      uses: azure/setup-helm@v4
+      with:
+        version: v3.14.4
+
+    - name: Configure kubeconfig
+      run: |
+        echo "$KUBE_CONFIG_DATA" | base64 -d > $GITHUB_WORKSPACE/kubeconfig
+        echo "KUBECONFIG=$GITHUB_WORKSPACE/kubeconfig" >> $GITHUB_ENV
+      env:
+        KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+
+    - name: Helm repos
+      run: |
+        helm repo add bitnami https://charts.bitnami.com/bitnami
+        helm repo add open-webui https://helm.openwebui.com
+        helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+        helm repo add grafana https://grafana.github.io/helm-charts
+        helm repo update
+
+    - name: Namespaces
+      run: |
+        kubectl create ns llm --dry-run=client -o yaml | kubectl apply -f -
+        kubectl create ns monitoring --dry-run=client -o yaml | kubectl apply -f -
+
+    - name: Cert-Manager (assumes installed already; comment out if done)
+      run: |
+        helm upgrade --install cert-manager jetstack/cert-manager \
+          -n cert-manager --create-namespace --set crds.enabled=true || true
+
+    - name: ClusterIssuer
+      run: kubectl apply -f kubernetes/clusterIssuer-letsencrypt.yaml
+
+    - name: PostgreSQL
+      run: |
+        helm upgrade --install postgresql bitnami/postgresql -n llm \
+          -f values/postgresql.yaml --atomic --create-namespace
+
+    - name: OpenWebUI
+      run: |
+        helm upgrade --install open-webui open-webui/open-webui -n llm \
+          -f values/openwebui.yaml --atomic
+
+    - name: kube-prometheus-stack
+      run: |
+        helm upgrade --install kube-prom prometheus-community/kube-prometheus-stack \
+          -n monitoring --set grafana.enabled=false --atomic --create-namespace
+
+    - name: Loki stack
+      run: |
+        helm upgrade --install loki grafana/loki-stack -n monitoring \
+          --set grafana.enabled=true --atomic
+
+    - name: Status
+      run: |
+        kubectl -n llm get deploy,ingress
+        kubectl -n monitoring get deploy,ingress

@@ -1,0 +1,11 @@
+extraEnvFrom:
+- secretRef:
+    name: openwebui-db-url
+ingress:
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  enabled: true
+  host: devops-le.darienc.com
+  tls: true
+ollama:
+  enabled: true

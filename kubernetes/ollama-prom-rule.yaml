@@ -1,0 +1,45 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    prometheus: kube-prometheus
+    role: alert-rules
+  name: ollama-alerts
+  namespace: monitoring
+spec:
+  groups:
+  - name: ollama.rules
+    rules:
+    - alert: OllamaHighMemoryUsage
+      annotations:
+        description: 'Ollama pod {{ $labels.pod }} memory usage is above 80% for more
+          than 5 minutes. Current usage: {{ $value | printf "%.2f" }}%'
+        summary: Ollama pod {{ $labels.pod }} high memory usage
+      expr: (container_memory_usage_bytes{pod=~"ollama-.*"} / container_spec_memory_limit_bytes{pod=~"ollama-.*"})
+        * 100 > 80
+      for: 5m
+      labels:
+        service: ollama
+        severity: warning
+    - alert: OllamaHighCPUUsage
+      annotations:
+        description: 'Ollama pod {{ $labels.pod }} CPU usage is above 80% for more
+          than 5 minutes. Current usage: {{ $value | printf "%.2f" }}%'
+        summary: Ollama pod {{ $labels.pod }} high CPU usage
+      expr: (rate(container_cpu_usage_seconds_total{pod=~"ollama-.*"}[5m]) * 100)
+        > 80
+      for: 5m
+      labels:
+        service: ollama
+        severity: warning
+    - alert: OllamaInferenceLatencyHigh
+      annotations:
+        description: 95th percentile inference latency is {{ $value | printf "%.2f"
+          }} seconds
+        summary: Ollama high inference latency
+      expr: histogram_quantile(0.95, rate(ollama_inference_duration_seconds_bucket[5m]))
+        > 10
+      for: 2m
+      labels:
+        service: ollama
+        severity: warning
