@@ -71,11 +71,14 @@ The platform can split both tier by instance types on the node pools.
 
 ### Multi-Tenant Security and Governance
 * Different namespaces on kubernetes can be used for each client, as several tenents.
-* Network Policies
+* Network Policies will be setup so all access is blocked by default, and other policies will be created to allow based on the labels matching with the same tenant.
 * AWS Secret Manager can be the best solution in this case. Kubernetes can sync the secrets with AWS and fetch the most up to date value.
 
 ### Advanced Observability
-For observability, we can use several tools.
-* For metrics: Prometheus, Node Exporter.
+For observability, there are several possible solution, but I've sticked with:
+* For metrics: Prometheus, Node Exporter, AlertManager.
 * For graphs: Grafana.
 * For Log Management: Promtail + Loki (CloudWatch could also be a solution).
+
+### Diagram
+![saas-diagram](imgs/diagram.png)
